@@ -36,11 +36,13 @@ include mopl1.mac
     x1 db ?
     x2 db ?
     x3 db ?
+	x4 db ?
 
     c1 db ?
     c2 db ?
     c3 db ?
     c4 db ?
+	c5 db ?
 
     f db ?
     z dd ?
@@ -66,6 +68,9 @@ FUNC_EVAL:
 	PUTL req4
 
 ;----------------------------------------------------
+	EXTRACT_BIT result_x, x4, 3
+	call PUTD
+	
 	EXTRACT_BIT result_x, x3, 2
 	call PUTD
 
@@ -78,37 +83,40 @@ FUNC_EVAL:
 ;----------------------------------------------------
 	mov al, x1
 	mov bl, x2
-	mov cl, x3
 	and bl, al
-	not cl
-	and cl, 1
-	and bl, cl
 	mov c1, bl
 
-	mov al, x2
-	mov bl, x3
-	not al
-	and al, 1
-	and al, bl
-	mov c2, al
+	mov al, x3
+	mov bl, x4
+	and bl, al
+	mov c2, bl
 
 	mov al, x1
 	mov bl, x2
+	mov cl, x3
 	not al
-	not bl
 	and al, 1
+	not bl
 	and bl, 1
 	and al, bl
+	and al, cl
 	mov c3, al
 
 	mov al, x2
 	mov bl, x3
-	not al
+	mov cl, x4
 	not bl
-	and al, 1
 	and bl, 1
+	not cl
+	and cl, 1
 	and al, bl
+	and al, cl
 	mov c4, al
+
+	mov al, x2
+	mov bl, x3
+	and bl, al
+	mov c5, bl
 
 	mov al, ' '
 	call PUTC
@@ -125,15 +133,22 @@ FUNC_EVAL:
 	mov al, c4
 	call PUTD
 
+	mov al, c5
+	call PUTD
+
 	mov al, c1
 	mov bl, c2
 	mov cl, c3
 	mov dl, c4
+	mov ah, c5
+
 	or al, bl
 	and al, 1
-	or cl, dl
-	and cl, 1
 	or al, cl
+	and al, 1
+	or al, dl
+	and al, 1
+	or al, ah
 	and al, 1
 	mov f, al
 
@@ -163,22 +178,31 @@ FUNC_EVAL:
 	jne false
 
 true:
-	shl result_x, 2
-	shl result_y, 1
 	mov al, '+'
 	call PUTC
-	jmp after_true
+	
+	shl result_x, 2
+	
+	mov eax, result_x
+	mov ebx, result_y
+	sub eax, ebx
+
+	jmp get_z
 
 false:
-	shr result_x, 3
-	shl result_y, 2
 	mov al, '-'
 	call PUTC
 
-after_true:
+	shr result_x, 2
+	shr result_y, 1
+
 	mov eax, result_x
 	mov ebx, result_y
 	add eax, ebx
+
+
+
+get_z:
 	mov z, eax
 
 	mov al, ' '
@@ -189,58 +213,58 @@ after_true:
 	PUTCRLF
 
 ;----------------------------------------------------
-; z11 &= z9
+; z3 = !z8
 	mov ebx, z
-	shr ebx, 9
+	shr ebx, 8
+	and ebx, 1
+
+	not ebx
+	and ebx, 1
+
+	shl ebx, 2
+
+	mov eax, z
+	and eax, 0FFFFFFFBh
+	or eax, ebx
+	mov z, eax
+
+	
+;----------------------------------------------------
+; z15 &= z16
+	mov ebx, z
+	shr ebx, 16
+	and ebx, 1
+
+	mov ecx, z
+	shr ecx, 15
+	and ecx, 1
+
+	and ebx, ecx
+	shl ebx, 15
+
+	mov eax, z
+	and eax, 0FFFF7FFFh
+	or eax, ebx
+	mov z, eax
+;----------------------------------------------------
+; z11 |= z8
+	mov ebx, z
+	shr ebx, 8
 	and ebx, 1
 
 	mov ecx, z
 	shr ecx, 11
 	and ecx, 1
 
-	and ebx, ecx
+	or ebx, ecx
 	shl ebx, 11
 
 	mov eax, z
 	and eax, 0FFFFF7FFh
 	or eax, ebx
 	mov z, eax
-;----------------------------------------------------
-; z17 |= z16
-	mov ebx, z
-	shr ebx, 16
-	and ebx, 1
-
-	mov ecx, z
-	shr ecx, 17
-	and ecx, 1
-
-	or ebx, ecx
-	shl ebx, 17
-
-	mov eax, z
-	and eax, 0FFFDFFFFh
-	or eax, ebx
-	mov z, eax
-;----------------------------------------------------
-; z13 = !z15
-	mov ebx, z
-	shr ebx, 15
-	and ebx, 1
-	not ebx
-	and ebx, 1
-
-	mov ecx, ebx
-	shl ecx, 13
-
-	mov eax, z
-	and eax, 0FFFFDFFFh
-	or eax, ecx
-	mov z, eax
 
 	PRINT z, 10
-
-
 ;----------------------------------------------------
 	mov ah, 4ch              ; завершение программы
 	int 21h
