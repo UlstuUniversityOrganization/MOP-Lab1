@@ -26,7 +26,10 @@ include mopl1.mac
 ;------------- Новые переменные ------------------------------------
     req3    db    "Введите 20 бит числа X", 0
     req31   db   "Введите 20 бит числа Y", 0
+	req32   db   "f8 = ", 0
     req4    db    "f8 = x1x2 | x3x4 | !x1!x2x3 | x2!x3!x4 | x2x3", 0
+	req5    db    "Результат: ", 0
+	req6    db    "После замены битов: ", 0
 
     bitlen dw 20
     bits_array db 20 dup(?)
@@ -62,23 +65,24 @@ FUNC_EVAL:
 	mov al, ' '
 	call PUTC
 
-	PRINT result_x, 10
+	; PRINT result_x, 10
 	
+	PUTCRLF
 	PUTCRLF
 	PUTL req4
 
 ;----------------------------------------------------
 	EXTRACT_BIT result_x, x4, 3
-	call PUTD
+	; call PUTD
 	
 	EXTRACT_BIT result_x, x3, 2
-	call PUTD
+	; call PUTD
 
 	EXTRACT_BIT result_x, x2, 1
-	call PUTD
+	; call PUTD
 
 	EXTRACT_BIT result_x, x1, 0
-	call PUTD
+	; call PUTD
 
 ;----------------------------------------------------
 	mov al, x1
@@ -118,23 +122,23 @@ FUNC_EVAL:
 	and bl, al
 	mov c5, bl
 
-	mov al, ' '
-	call PUTC
+	; mov al, ' '
+	; call PUTC
 
-	mov al, c1
-	call PUTD
+	; mov al, c1
+	; call PUTD
 
-	mov al, c2
-	call PUTD
+	; mov al, c2
+	; call PUTD
 
-	mov al, c3
-	call PUTD
+	; mov al, c3
+	; call PUTD
 
-	mov al, c4
-	call PUTD
+	; mov al, c4
+	; call PUTD
 
-	mov al, c5
-	call PUTD
+	; mov al, c5
+	; call PUTD
 
 	mov al, c1
 	mov bl, c2
@@ -152,11 +156,14 @@ FUNC_EVAL:
 	and al, 1
 	mov f, al
 
-	mov al, ' '
-	call PUTC
+	; mov al, ' '
+	; call PUTC
+
+	PUTL req32
 
 	mov al, f
 	call PUTD
+	PUTCRLF
 
 ;----------------------------------------------------
 	PUTCRLF
@@ -169,8 +176,9 @@ FUNC_EVAL:
 	mov al, ' '
 	call PUTC
 
-	PRINT result_y, 10
+	; PRINT result_y, 10
 
+	PUTCRLF
 	PUTCRLF
 
 ;----------------------------------------------------
@@ -178,8 +186,8 @@ FUNC_EVAL:
 	jne false
 
 true:
-	mov al, '+'
-	call PUTC
+	; mov al, '+'
+	; call PUTC
 	
 	shl result_x, 2
 	
@@ -190,8 +198,8 @@ true:
 	jmp get_z
 
 false:
-	mov al, '-'
-	call PUTC
+	; mov al, '-'
+	; call PUTC
 
 	shr result_x, 2
 	shr result_y, 1
@@ -205,11 +213,14 @@ false:
 get_z:
 	mov z, eax
 
-	mov al, ' '
-	call PUTC
+	; mov al, ' '
+	; call PUTC
+
+	PUTL req5
 
 	PRINT z, 10
 
+	PUTCRLF
 	PUTCRLF
 
 ;----------------------------------------------------
@@ -264,6 +275,7 @@ get_z:
 	or eax, ebx
 	mov z, eax
 
+	PUTL req6
 	PRINT z, 10
 ;----------------------------------------------------
 	mov ah, 4ch              ; завершение программы
